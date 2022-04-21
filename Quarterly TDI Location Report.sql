@@ -1,6 +1,6 @@
 /*
 This query is meant for the "Number of participating (in network) providers section of the
-TDI quarterly report. It pulls all location of specific specialties. The dates can be changed 
+TDI quarterly report. It pulls all locations of specific specialties. The dates can be changed 
 in variables QS (start of quarter) and QE (end of quarter) to effect the entire query. The 
 specialties can also be changed for the locations in the WHERE section. Per Ed Ochal, this 
 report is done for all locations with a TX benefit network in ANY state. This can be changed
