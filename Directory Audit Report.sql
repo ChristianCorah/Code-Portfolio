@@ -2,7 +2,7 @@
 This query pulls all locations affialied with a certain benefit network. It is filtered by benefit network
 and looks as of a certain date. This date can be today for states we are in, or a future date for states
 we are not in yet. Information provided is supplier name, supplier HCC ID, tax ID, location name, location 
-HCC ID, all addrss information, and all benefit networks for the location listed in one line.
+HCC ID, all address information, and all benefit networks for the location listed in one line.
 */
 
 With Ben_Net_Query as 
@@ -28,8 +28,7 @@ Select DISTINCT
 	isnull(a.addr_line_2,'') addre_line_2, 
 	isnull(a.addr_line_3,'') addr_line_3, 
 	a.state_name, 
-	right(bq.Benefit_Networks,
-	LEN(bq.Benefit_Networks)-1) 'Benefit Networks'
+	right(bq.Benefit_Networks, LEN(bq.Benefit_Networks)-1) 'Benefit Networks' -- This removes the first ';' of the field of data so it appears more aesthetcially
 From supp_locn sl
 	Join Ben_Net_Query bq
 	On sl.HCC_id = bq.HCC_id
