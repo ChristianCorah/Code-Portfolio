@@ -1,0 +1,80 @@
+# This analysis is for a popular TikToker. It examines data within her control
+# that she could potentially use to get more views. This variables include
+# time posted, length of video, and whether or not the video is posted within
+# an hour of another. The main dependent variable is "Total_Success_Score". It
+# is a weighted combination of views, likes, comments, and shares.
+
+Tik_Tok_Data <- read_excel("Tik Tok Data.xlsx")
+
+library(dplyr)
+library(readr)
+library(effsize)
+library(parameters)
+library(effectsize)
+library(ggpubr)
+
+# Independent sample T-test for "TOTAL SUCCESS SCORE AVERAGE BY POSTED WITHIN AN HOUR OF ANOTHER VIDEO?". 
+
+Within_Hour_DF <- Tik_Tok_Data %>%
+  filter(
+    Creator == "S",
+    `Same_Day_as_Other_Video?` == 'Y') %>% # Filtered to specific creator's videos and only videos posted on the same day as another for the most accurate comparison
+  transmute(
+    "TSS" = Total_Success_Score, 
+    "Within_1_Hour?" = as.factor(`Posted_Within_1_Hour_of_Another_Video?`))
+
+Within_Hour_result <- t.test(
+  TSS ~ `Within_1_Hour?`,
+  var.equal = TRUE,
+  data = Within_Hour_DF)
+
+Within_Hour_result # p = .613
+cohen.d(TSS ~ `Within_1_Hour?`, data = Within_Hour_DF) # d = .209 (small)
+
+# ANOVA for "TOTAL SUCCESS SCORE AVERAGE BY TIME POSTED"
+
+Time_Diff_DF <- Tik_Tok_Data %>%
+  filter(Creator == 'S') %>%
+  transmute(
+    'TSS' = Total_Success_Score,
+    'Time_Posted_Binned' = cut(Time_NUMBER, c(.25,.33,.42,.50,.58,.67,.75,.83,1)) # Time as number variable binned into two hour increments to be used as IV for ANOVA   
+  )
+
+Time_Diff_Result <- aov(
+  TSS ~ Time_Posted_Binned,
+  data = Time_Diff_DF) # Define results of ANOVA
+
+Time_Diff_Result
+model_parameters(Time_Diff_Result) # p = .033
+eta_squared(Time_Diff_Result) # Eta2 = .26, 26% of total variance explained
+
+# Correlation between "WATCHED FULL VIDEO % AND TOTAL SUCCESS SCORE"
+
+Full_Video_Percentage <- Tik_Tok_Data %>%
+  filter(
+    Creator == 'S',
+    Total_Success_Score <= 6000000) # Removing outliers that have too much influence on correlation
+
+Full_Video_Percentage_Results <- cor.test(
+  Full_Video_Percentage$`Watched_Full_Video_(%)`, 
+  Full_Video_Percentage$`Total_Success_Score`)
+
+Full_Video_Percentage_Results # p = .001, r = .578
+
+# Correlation between "Length of Video, Average Watch Time, and Total Success Score"
+
+Video_Length_DF <- Tik_Tok_Data %>%
+  filter(
+    Creator == 'S',
+    Views <= 750000) # Removing outliers that have too much influence on correlation
+
+Video_Length_Results <- cor.test(
+  Video_Length_DF$Length_of_Video,
+  Video_Length_DF$Total_Success_Score)
+
+Average_Watch_Time_Results <- cor.test(
+  Video_Length_DF$Average_Watch_Time,
+  Video_Length_DF$Total_Success_Score)
+
+Video_Length_Results # p = .001, r = .597
+Average_Watch_Time_Results # p = .001, r = .794
